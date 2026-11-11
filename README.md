@@ -302,25 +302,43 @@ Para aplicar os conceitos estudados, foi criado o arquivo:
 
 `api_example.py`
 
-Código:
+Código (versão atual, com timeout e tratamento de erros):
 
 ```python
 import requests
 
-url = "https://jsonplaceholder.typicode.com/posts/1"
+URL = "https://jsonplaceholder.typicode.com/posts/1"
 
-response = requests.get(url)
 
-print("Status:", response.status_code)
+def buscar_post(url: str) -> dict | None:
+    """Faz um GET na API e devolve o JSON como dicionário, ou None se falhar."""
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()  # levanta erro para status 4xx e 5xx
+    except requests.Timeout:
+        print("Erro: a API demorou demais para responder.")
+        return None
+    except requests.RequestException as erro:
+        print(f"Erro ao consultar a API: {erro}")
+        return None
 
-if response.status_code == 200:
-    dados = response.json()
+    print("Status:", response.status_code)
+    return response.json()
 
-    print("ID:", dados["id"])
-    print("Título:", dados["title"])
-    print("Conteúdo:", dados["body"])
-else:
-    print("Erro ao consultar a API.")
+
+if __name__ == "__main__":
+    dados = buscar_post(URL)
+    if dados:
+        print("ID:", dados["id"])
+        print("Título:", dados["title"])
+        print("Conteúdo:", dados["body"])
+```
+
+### Como executar
+
+```bash
+pip install -r requirements.txt
+python api_example.py
 ```
 
 ---
@@ -428,4 +446,4 @@ Como evolução deste projeto, pretendo estudar:
 
 **Gabriel Ribeiro Pedroso**
 
-Estudante de Análise e Desenvolvimento de Sistemas, com foco em Python, automação e Inteligência Artificial aplicada.
+Estudante de Python, automação e Inteligência Artificial aplicada. Fundador da PROPECSTI.
